@@ -1,0 +1,104 @@
+Arch Linux Kurulum Adımları v3 (Fai'ye Özel)
+
+loadkeys trq
+iwctl
+station <aygıt ismi> connect <ağ ismi>
+<ağ şifresini yaz>
+quit
+timedatectl set-ntp true
+hwclock --systohc
+fdisk /dev/sda
+n
+<last sector gelene kadar enterla>
++8G
+n
+<last sector gelene kadar enterla>
+-512M
+n 
+<bölümü oluşturana kadar enterla>
+t
+1
+19
+t
+3
+1
+w
+mkswap /dev/sda1
+swapon /dev/sda1
+mkfs.ext4 /dev/sda2
+mkfs.fat -F 32 /dev/sda3
+mount /dev/sda2 /mnt
+pacstrap /mnt base base-devel linux linux-firmware
+genfstab -U /mnt >> /mnt/etc/fstab
+arch-chroot /mnt
+timedatectl set-timezone Europe/Istanbul
+sudo pacman -S vim
+locale-gen
+sudo vim /etc/locale.gen
+i
+<"#tr_TR.UTF-8 UTF-8" yazan yeri bulun ve başındaki "#" işaretini kaldır>
+<esc bas>
+:wq
+sudo vim /etc/locale.conf
+i
+LANG=tr_TR.UTF-8
+<esc bas>
+:wq
+sudo vim /etc/vconsole.conf
+i
+KEYMAP=trq
+<esc bas>
+:wq
+locale-gen
+sudo vim /etc/hostname
+i
+fai
+<esc basın>
+:wq
+sudo vim /etc/hosts 
+<içine alttaki ilk 3 satırı yazın>
+127.0.0.1    localhost.localdomain    localhost
+::1        localhost.localdomain    localhost
+127.0.1.1    fai.localdomain    fai
+mkinitcpio -p linux
+passwd
+<şifreni yaz>
+sudo pacman -S grub efibootmgr
+mkdir /boot/efi
+mount <3. oluşturulan bölüm yolu> /boot/efi
+grub-install --target=x86_64-efi --bootloader-id=GRUB --efi-directory=/boot/efi
+sudo pacman -S intel-ucode
+grub-mkconfig -o /boot/grub/grub.cfg
+sudo vim /etc/pacman.conf
+<Alttaki ilk 2 satırı bul ve başındaki #'leri sil
+#[multilib]
+#Include = /etc/pacman.d/mirrorlist
+<esc bas>
+:wq
+sudo pacman -Syy
+sudo pacman -S xorg cinnamon gdm nautilus wpa_supplicant networkmanager bluez steam discord flameshot pulseaudio blueman arc-gtk-theme pavucontrol xf86-input-synaptics firefox vlc git wget yajl libreoffice-still-tr qbittorrent gnome-terminal
+<paket seçme isterse ilk paket numarasını yazıp "-" koyup son paket numarasını yazın, örn: 1-48>
+1
+exit
+reboot
+<pc açıldıktan sonra kullanıcı adına "root" yazın ve sağ altta çıkan ayarlar yerine tıklayıp "cinnamon" seçin. Seçtikten sonraysa terminal açın ve alttakiler yazın>
+useradd -m fai
+passwd fai
+<şifreni yaz>
+vim /etc/sudoers
+i
+fai ALL: (ALL) 
+<esc basın>
+:wq! 
+<pcnizi yeniden başlat, şifreni girince terminali aç, cinnamonu seçmeyi unutma>
+cd /tmp
+git clone https://aur.archlinux.org/package-query.git
+cd package-query/
+makepkg -si && cd /tmp/
+git clone https://aur.archlinux.org/yaourt.git
+cd yaourt/
+makepkg -si
+cd
+curl -sS https://download.spotify.com/debian/pubkey_0D811D58.gpg | gpg --import -
+yaourt -S whatsapp-nativefier spotify ocs-url zoom bluetooth-autoconnect all-repository-fonts spotify-adblock-linux
+sudo systemctl enable gdm NetworkManager wpa_supplicant bluetooth bluetooth-autoconnect
